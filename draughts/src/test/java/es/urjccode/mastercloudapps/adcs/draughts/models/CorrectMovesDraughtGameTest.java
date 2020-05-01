@@ -343,29 +343,5 @@ public class CorrectMovesDraughtGameTest extends GameTest {
             new Coordinate(0, 3));
     }
 
-    @Test
-    public void testGivenGameWhenMoveBLACKThen (){
-        setGame(Color.BLACK,
-            " n n n n",
-            "n n n n ",
-            " n   n n",
-            "    n   ",
-            " b b    ",
-            "    b b ",
-            " b b b b",
-            "b b b b ");
-        setExpectedGame(Color.WHITE,
-            " n n n n",
-            "n n n n ",
-            " n   n  ",
-            "      n ",
-            " b b    ",
-            "    b b ",
-            " b b b b",
-            "b b b b ");
-        assertMove(
-            new Coordinate(2,7),
-            new Coordinate(3, 6)
-        );
-    }
+
 }

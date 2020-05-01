@@ -1,16 +1,9 @@
 package es.urjccode.mastercloudapps.adcs.draughts.controllers;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import es.urjccode.mastercloudapps.adcs.draughts.models.*;
 import org.junit.Test;
 
-import es.urjccode.mastercloudapps.adcs.draughts.models.Coordinate;
-import es.urjccode.mastercloudapps.adcs.draughts.models.Game;
-import es.urjccode.mastercloudapps.adcs.draughts.models.State;
-import es.urjccode.mastercloudapps.adcs.draughts.models.Color;
-import es.urjccode.mastercloudapps.adcs.draughts.models.GameBuilder;
+import static org.junit.Assert.*;
 
 public class PlayControllerTest {
 
@@ -72,6 +65,61 @@ public class PlayControllerTest {
         playController.cancel();
         assertEquals(Color.BLACK, playController.getColor());
         assertFalse(game.isBlocked());
+    }
+
+    @Test
+    public void testGivenGameWhenMoveBlackAndNoEatThenLostPiece (){
+        Game game = new GameBuilder()
+            .color(Color.BLACK)
+            .rows(
+                " n n n n",
+                "n n n n ",
+                " n   n n",
+                "    n   ",
+                " b b    ",
+                "    b b ",
+                " b b b b",
+                "b b b b "
+            )
+            .build();
+        Game expected = new GameBuilder()
+            .color(Color.WHITE)
+            .rows(
+                " n n n n",
+                "n n n n ",
+                " n   n  ",
+                "      n ",
+                " b b    ",
+                "    b b ",
+                " b b b b",
+                "b b b b "
+            )
+            .build();
+        assertNull(game.move(
+            new Coordinate(2,7),
+            new Coordinate(3, 6)
+        ));
+        assertEquals(game, expected);
+    }
+
+    @Test
+    public void testGivenGameWhenMoveBlackAndNoEatThenLostRandomPiece () {
+        Game game = new GameBuilder().rows(
+            "        ",
+            "    n   ",
+            "     b  ",
+            "  n     ",
+            "   b    ",
+            "  n n   ",
+            "        ",
+            "        ").build();
+        assertNull(game.move(
+            new Coordinate(4,3),
+            new Coordinate(3, 4)
+        ));
+        Piece b1 = game.getPiece(new Coordinate(3, 4));
+        Piece b2 = game.getPiece(new Coordinate(2, 5));
+        assertTrue(b1 == null || b2 == null);
     }
 
 }
