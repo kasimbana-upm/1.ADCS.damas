@@ -2,6 +2,7 @@ package es.urjccode.mastercloudapps.adcs.draughts.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Game {
 
@@ -66,18 +67,31 @@ public class Game {
 	}
 
 	private void pairMove(List<Coordinate> removedCoordinates, int pair, Coordinate... coordinates) {
+        List<Coordinate> piecesCanEat = getPiecesCanEat();
+        boolean canEat = piecesCanEat.size() > 0;
 		Coordinate forRemoving = this.getBetweenDiagonalPiece(pair, coordinates);
-		if (forRemoving != null) {
-			removedCoordinates.add(0, forRemoving);
-			this.board.remove(forRemoving);
-		}
-		this.board.move(coordinates[pair], coordinates[pair + 1]);
-		if (this.board.getPiece(coordinates[pair + 1]).isLimit(coordinates[pair + 1])) {
-			Color color = this.board.getColor(coordinates[pair + 1]);
-			this.board.remove(coordinates[pair + 1]);
-			this.board.put(coordinates[pair + 1], new Draught(color));
-		}
-	}
+		boolean willEat = forRemoving != null;
+		int randomPieceIndex = (int) ((Math.random() * piecesCanEat.size()));
+        Coordinate pieceToDelete = canEat ? piecesCanEat.get(randomPieceIndex) : null;
+        if(canEat && !willEat) {
+            if(pieceToDelete.equals(coordinates[pair])) {
+                pieceToDelete = coordinates[pair + 1];
+            }
+        }
+        if (forRemoving != null) {
+            removedCoordinates.add(0, forRemoving);
+            this.board.remove(forRemoving);
+        }
+        this.board.move(coordinates[pair], coordinates[pair + 1]);
+        if (this.board.getPiece(coordinates[pair + 1]).isLimit(coordinates[pair + 1])) {
+            Color color = this.board.getColor(coordinates[pair + 1]);
+            this.board.remove(coordinates[pair + 1]);
+            this.board.put(coordinates[pair + 1], new Draught(color));
+        }
+        if(canEat && !willEat) {
+            this.board.remove(pieceToDelete);
+        }
+    }
 
 	private Coordinate getBetweenDiagonalPiece(int pair, Coordinate... coordinates) {
 		assert coordinates[pair].isOnDiagonal(coordinates[pair + 1]);
@@ -198,4 +212,38 @@ public class Game {
 		return true;
 	}
 
+    private List<Coordinate> getPiecesCanEat() {
+        List<Coordinate> res = new ArrayList<>();
+        getCoordinatesWithActualColor().forEach(coordinate1 -> {
+            List<Coordinate> food = pieceCanEatSomePiece(coordinate1);
+            boolean pieceCanEat = food.size() > 0;
+            if(pieceCanEat) {
+                food.forEach(c -> {
+                    res.add(coordinate1);
+                });
+            }
+        });
+        return res.stream().distinct().collect(Collectors.toList());
+    }
+
+    private List<Coordinate> pieceCanEatSomePiece(Coordinate coordinate) {
+	    List<Coordinate> result = new ArrayList<>();
+        Piece pieceMoving = this.getPiece(coordinate);
+        List<Coordinate> candidatesFree = coordinate.getDiagonalCoordinates(2);
+        for(Coordinate candidate : candidatesFree){
+            if(getPiece(candidate) == null) {
+                Coordinate betweenDiagonalCoordinate = coordinate.getBetweenDiagonalCoordinate(candidate);
+                Piece piece = this.getPiece(betweenDiagonalCoordinate);
+                if(piece != null) {
+                    if(!piece.getColor().equals(pieceMoving.getColor())) {
+                        Error error = isCorrectPairMove(0, coordinate, candidate);
+                        if(error == null) {
+                            result.add(candidate);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
 }
