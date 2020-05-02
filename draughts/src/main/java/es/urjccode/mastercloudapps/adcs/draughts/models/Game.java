@@ -67,17 +67,8 @@ public class Game {
 	}
 
 	private void pairMove(List<Coordinate> removedCoordinates, int pair, Coordinate... coordinates) {
-        List<Coordinate> piecesCanEat = getPiecesCanEat();
-        boolean canEat = piecesCanEat.size() > 0;
-		Coordinate forRemoving = this.getBetweenDiagonalPiece(pair, coordinates);
-		boolean willEat = forRemoving != null;
-		int randomPieceIndex = (int) ((Math.random() * piecesCanEat.size()));
-        Coordinate pieceToDelete = canEat ? piecesCanEat.get(randomPieceIndex) : null;
-        if(canEat && !willEat) {
-            if(pieceToDelete.equals(coordinates[pair])) {
-                pieceToDelete = coordinates[pair + 1];
-            }
-        }
+        Coordinate forRemoving = this.getBetweenDiagonalPiece(pair, coordinates);
+        Coordinate pieceToDelete = getPieceToDeleteWhenNoEat(forRemoving, pair, coordinates);
         if (forRemoving != null) {
             removedCoordinates.add(0, forRemoving);
             this.board.remove(forRemoving);
@@ -88,7 +79,7 @@ public class Game {
             this.board.remove(coordinates[pair + 1]);
             this.board.put(coordinates[pair + 1], new Draught(color));
         }
-        if(canEat && !willEat) {
+        if(pieceToDelete != null) {
             this.board.remove(pieceToDelete);
         }
     }
@@ -211,6 +202,20 @@ public class Game {
 			return false;
 		return true;
 	}
+
+    private Coordinate getPieceToDeleteWhenNoEat(Coordinate forRemoving, int pair, Coordinate... coordinates) {
+        List<Coordinate> piecesCanEat = getPiecesCanEat();
+        boolean canEat = piecesCanEat.size() > 0;
+        boolean willEat = forRemoving != null;
+        int randomPieceIndex = (int) ((Math.random() * piecesCanEat.size()));
+        Coordinate pieceToDelete = canEat && !willEat ? piecesCanEat.get(randomPieceIndex) : null;
+        if(canEat && !willEat) {
+            if(pieceToDelete.equals(coordinates[pair])) {
+                pieceToDelete = coordinates[pair + 1];
+            }
+        }
+        return pieceToDelete;
+    }
 
     private List<Coordinate> getPiecesCanEat() {
         List<Coordinate> res = new ArrayList<>();
